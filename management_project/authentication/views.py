@@ -17,7 +17,7 @@ def login_view(request):
                 # Secure password validation with hashed password
                 if check_password(password, user.password):
                     request.session['user_id'] = user.id  # Store the user in the session
-                    return redirect(f"{user.role.role_name}")  # Redirect to a success page (e.g., home page)
+                    return redirect(f"{user.role.role_name}", user_id=user.id)  # Redirect to a success page (e.g., home page)
                 else:
                     form.add_error(None, "Invalid password")  # Invalid password error
 
