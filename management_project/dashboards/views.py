@@ -8,6 +8,7 @@ from django.contrib import messages
 def Admin_view(request,user_id):
     admin = get_object_or_404(User, id=user_id)
     context={
+        'name':admin.name,
         'user_id':user_id,
         'courses_count':course.objects.all().count(),
         'pending_count':TrainingRequest.objects.filter(status='Pending').count(),
