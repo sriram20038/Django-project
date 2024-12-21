@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import TrainingRequest,course
 from authentication.models import User,Role
-from .forms import RequestForm
+from .forms import RequestForm,CourseForm
+from django.contrib import messages
 
 # Create your views here.
 def Admin_view(request,user_id):
@@ -9,7 +10,7 @@ def Admin_view(request,user_id):
     context={
         'user_id':user_id,
         'courses_count':course.objects.all().count(),
-        'pending_count':TrainingRequest.objects.all().count(),
+        'pending_count':TrainingRequest.objects.filter(status='Pending').count(),
         'employees_count':User.objects.filter(role=Role.objects.get(role_name='Employee').id).count(),
         'pending_requests':TrainingRequest.objects.filter(status='Pending'),
         'approved_requests':TrainingRequest.objects.filter(status='Approved'),
@@ -31,7 +32,7 @@ def admin_action(request, user_id, request_id):
         if action == 'create':
             task.status = 'Approved'
             task.save()
-            return redirect('Admin', user_id=user_id)  # Correct the redirect to pass user_id properly
+            return redirect('create_course', user_id=user_id)  # Correct the redirect to pass user_id properly
 
         elif action == 'reject':
             task.status = 'Rejected'
@@ -39,6 +40,24 @@ def admin_action(request, user_id, request_id):
             return redirect('Admin', user_id=user_id)  # Correct the redirect to pass user_id properly
 
     return render(request, 'dashboards/admin_action.html', context)
+
+def create_course(request, user_id):
+    create=User.objects.get(id=user_id)
+    if request.method == 'POST':
+        form = CourseForm(request.POST)
+        
+        if form.is_valid():
+            course = form.save(commit=False)  # Don't save to the database yet
+            course.created_by = create  # Assign the logged-in user
+            course.save()  # Save to the database
+            messages.success(request, 'Course created successfully!')
+            return redirect('Admin', user_id=user_id)
+
+    else:
+        form = CourseForm()
+
+    return render(request, 'dashboards/create_course.html', {'form': form})
+
 
 def Employee_view(request):
     return render(request, 'dashboards/Employee.html')
