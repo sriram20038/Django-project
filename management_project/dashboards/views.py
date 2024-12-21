@@ -1,11 +1,44 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest
-from authentication.models import User
+from .models import TrainingRequest,course
+from authentication.models import User,Role
 from .forms import RequestForm
 
 # Create your views here.
-def Admin_view(request):
-    return render(request, 'dashboards/Admin.html')
+def Admin_view(request,user_id):
+    admin = get_object_or_404(User, id=user_id)
+    context={
+        'user_id':user_id,
+        'courses_count':course.objects.all().count(),
+        'pending_count':TrainingRequest.objects.all().count(),
+        'employees_count':User.objects.filter(role=Role.objects.get(role_name='Employee').id).count(),
+        'pending_requests':TrainingRequest.objects.filter(status='Pending'),
+        'approved_requests':TrainingRequest.objects.filter(status='Approved'),
+
+    }
+    return render(request, 'dashboards/Admin.html',context)
+
+def admin_action(request, user_id, request_id):
+    task = get_object_or_404(TrainingRequest, request_id=request_id)
+    context = {
+        'title': task.title,
+        'description': task.description,
+        'account_manager': task.account_manager
+    }
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'create':
+            task.status = 'Approved'
+            task.save()
+            return redirect('Admin', user_id=user_id)  # Correct the redirect to pass user_id properly
+
+        elif action == 'reject':
+            task.status = 'Rejected'
+            task.save()
+            return redirect('Admin', user_id=user_id)  # Correct the redirect to pass user_id properly
+
+    return render(request, 'dashboards/admin_action.html', context)
 
 def Employee_view(request):
     return render(request, 'dashboards/Employee.html')
