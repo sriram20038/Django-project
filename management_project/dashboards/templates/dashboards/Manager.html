@@ -290,6 +290,36 @@
           }
       }
 
+      #pagination {
+    display: flex; /* Align items in a row */
+    justify-content: center; /* Center the buttons horizontally */
+    margin: 20px 0; /* Add vertical spacing */
+}
+
+#pagination button {
+    background-color: #007bff; /* Blue background */
+    color: white; /* White text color */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 10px 20px; /* Add spacing inside the buttons */
+    font-size: 16px; /* Adjust font size for readability */
+    cursor: pointer; /* Pointer cursor on hover */
+    margin: 0 10px; /* Add space between buttons */
+    transition: background-color 0.3s ease, opacity 0.3s ease; /* Smooth transitions */
+}
+
+#pagination button:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+#pagination button:disabled {
+    background-color: #cccccc; /* Gray background for disabled button */
+    color: #666666; /* Dim text for disabled button */
+    cursor: not-allowed; /* Show not-allowed cursor for disabled button */
+    opacity: 0.6; /* Reduce opacity for disabled button */
+}
+
+
  
   </style>
 </head>
@@ -344,28 +374,38 @@
           <button onclick="openForm()">Create New Request</button>
       </div>
       <table class="table">
-          <thead>
-              <tr>
-                  <th>Title</th>
-                  <th>Description</th>
-                  <th>created_at</th>
-                  <th>Status</th>
-                  
-              </tr>
-          </thead>
-          <tbody id="requestTableBody">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Created At</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="requestTableBody">
             {% for item in data %}
             <tr>
                 <td>{{ item.title }}</td>
                 <td>{{ item.description }}</td>
-                <td>{{item.created_at}}</td>
-                <td>{{item.status}}</td>
+                <td>{{ item.created_at }}</td>
+                <td>{{ item.status }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No data available</td>
             </tr>
             {% endfor %}
-            
         </tbody>
-      </table>
-  </div>
+    </table>
+  </div> 
+<div id="pagination">
+    <button id="prevButton" value="0" disabled>..Prev</button>
+    <button id="nextButton" value="5" disabled>Next..</button>
+</div>
+       
+
+
+
 
   <div id="modal" class="modal-overlay">
       <div class="modal">
@@ -386,13 +426,6 @@
           document.body.className = e.target.value;
       });
 
-      // Modal functionality
-      const modal = document.getElementById('modal');
-      const requestForm = document.getElementById('requestForm');
-      const requestTableBody = document.getElementById('requestTableBody');
-      const totalRequestsElement = document.getElementById('totalRequests');
-      const completedRequestsElement = document.getElementById('completedRequests');
-      const pendingRequestsElement = document.getElementById('pendingRequests');
 
       function openForm() {
           modal.style.display = 'flex';
@@ -403,43 +436,42 @@
           requestForm.reset();
       }
 
-    //   requestForm.addEventListener('submit', (e) => {
-    //       e.preventDefault();
-    //       const formData = new FormData(requestForm);
-    //       const data = Object.fromEntries(formData);
-          
-    //       // Add new request to the table
-    //       const newRow = requestTableBody.insertRow();
-    //       newRow.innerHTML = `
-    //           <td>${data.courseName}</td>
-    //           <td>${data.employeePosition}</td>
-    //           <td>PENDING</td>
-    //           <td>${new Date().toLocaleDateString()}</td>
-    //           <td><a href="#" class="view-button">View</a></td>
-    //       `;
+      document.addEventListener('DOMContentLoaded', function () {
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    const limit = 5;
+    let offset = parseInt(new URLSearchParams(window.location.search).get('offset')) || 0; // Default offset to 0
+    const total = parseInt('{{ total }}', 10);
 
-    //       alert('Request Submitted!');
-    //       closeForm();
-    //   });
+    // Function to update button states
+    function updateButtonStates() {
+        prevButton.disabled = offset <= 0;
+        nextButton.disabled = offset + limit >= total;
+    }
 
-    //   // Close modal if clicking outside
-    //   modal.addEventListener('click', (e) => {
-    //       if (e.target === modal) {
-    //           closeForm();
-    //       }
-    //   });
+    // Initial button state update
+    updateButtonStates();
 
-      // Add fade-in animation to elements
-      document.addEventListener('DOMContentLoaded', () => {
-          const elements = document.querySelectorAll('.fade-in');
-          elements.forEach(el => {
-              el.style.opacity = '0';
-              setTimeout(() => {
-                  el.style.opacity = '1';
-              }, 100);
-          });
-      });
-  </script>
+    // Add event listeners for Prev and Next buttons
+    prevButton.addEventListener('click', function () {
+        offset = Math.max(0, offset - limit);
+        updatePage(offset);
+    });
+
+    nextButton.addEventListener('click', function () {
+        if (offset + limit < total) { // Ensure we don't exceed total
+            offset += limit;
+            updatePage(offset);
+        }
+    });
+
+    // Function to update the page by changing the offset in the URL
+    function updatePage(newOffset) {
+        const newUrl = `${window.location.pathname}?limit=${limit}&offset=${newOffset}`;
+        window.location.href = newUrl; // Reload page with new parameters
+    }
+});
+</script>
 
 </body>
 </html>

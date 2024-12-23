@@ -3,6 +3,8 @@ from .models import TrainingRequest,Course
 from authentication.models import User,Role
 from .forms import TrainingRequestForm,CourseForm
 from django.contrib import messages
+from django.core.paginator import Paginator
+
 
 # Create your views here.
 def Admin_view(request, user_id):
@@ -86,14 +88,22 @@ def Employee_view(request,user_id):
     return render(request, 'dashboards/Employee.html',context)
 def Manager_view(request, user_id):
     manager = get_object_or_404(User, id=user_id)
-    training_requests = TrainingRequest.objects.filter(account_manager=manager)
+    training_requests = TrainingRequest.objects.filter(account_manager=manager).order_by('-created_at')
+    limit = int(request.GET.get('limit', 5))
+    offset = int(request.GET.get('offset', 0))
+
+
+    # Use Paginator to manage data
+    paginator = Paginator(training_requests, limit)
+    page_number = offset // limit + 1
+    page = paginator.get_page(page_number)
     
     context = {
         'name': manager.name,
         'total': training_requests.count(),
         'completed': training_requests.filter(status='Approved').count(),
         'pending': training_requests.filter(status='Pending').count(),
-        'data': training_requests,
+        'data': page,
     }
 
     if request.method == 'POST':
