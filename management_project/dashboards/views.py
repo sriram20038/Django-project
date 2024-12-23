@@ -1,23 +1,30 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest,course
+from .models import TrainingRequest,Course
 from authentication.models import User,Role
-from .forms import RequestForm,CourseForm
+from .forms import TrainingRequestForm,CourseForm
 from django.contrib import messages
 
 # Create your views here.
-def Admin_view(request,user_id):
+def Admin_view(request, user_id):
     admin = get_object_or_404(User, id=user_id)
-    context={
-        'name':admin.name,
-        'user_id':user_id,
-        'courses_count':course.objects.all().count(),
-        'pending_count':TrainingRequest.objects.filter(status='Pending').count(),
-        'employees_count':User.objects.filter(role=Role.objects.get(role_name='Employee').id).count(),
-        'pending_requests':TrainingRequest.objects.filter(status='Pending'),
-        'approved_requests':TrainingRequest.objects.filter(status='Approved'),
 
+    if request.method == 'POST' and 'delete_course' in request.POST:
+        course_id = request.POST.get('course_id')
+        course = get_object_or_404(Course, course_id=course_id)
+        course.delete()
+        return redirect('Admin', user_id=user_id)  # Redirect to the admin page after deletion
+
+    context = {
+        'name': admin.name,
+        'user_id': user_id,
+        'courses_count': Course.objects.all().count(),
+        'pending_count': TrainingRequest.objects.filter(status='Pending').count(),
+        'employees_count': User.objects.filter(role=Role.objects.get(role_name='Employee').id).count(),
+        'pending_requests': TrainingRequest.objects.filter(status='Pending'),
+        'courses': Course.objects.all(),
     }
-    return render(request, 'dashboards/Admin.html',context)
+    return render(request, 'dashboards/Admin.html', context)
+
 
 def admin_action(request, user_id, request_id):
     task = get_object_or_404(TrainingRequest, request_id=request_id)
@@ -59,9 +66,24 @@ def create_course(request, user_id):
 
     return render(request, 'dashboards/create_course.html', {'form': form})
 
+def view_course(request,course_id):
+    course = get_object_or_404(Course, course_id=course_id)
 
-def Employee_view(request):
-    return render(request, 'dashboards/Employee.html')
+    context={
+        'course':course
+
+    }
+    return render(request, 'dashboards/view_course.html', context)
+
+
+
+def Employee_view(request,user_id):
+    employee = get_object_or_404(User, id=user_id)
+    context={
+        'employee':employee,
+        'courses':Course.objects.all()
+    }
+    return render(request, 'dashboards/Employee.html',context)
 def Manager_view(request, user_id):
     manager = get_object_or_404(User, id=user_id)
     training_requests = TrainingRequest.objects.filter(account_manager=manager)
@@ -75,7 +97,7 @@ def Manager_view(request, user_id):
     }
 
     if request.method == 'POST':
-        form = RequestForm(request.POST)
+        form = TrainingRequestForm(request.POST)
         if form.is_valid():
             # Create a TrainingRequest instance but don't save it yet
             instance = form.save(commit=False)
@@ -85,7 +107,7 @@ def Manager_view(request, user_id):
         else:
             print(form.errors)  # Print errors for debugging
     else:
-        form = RequestForm()
+        form = TrainingRequestForm()
 
     context['form'] = form
     return render(request, 'dashboards/Manager.html', context)

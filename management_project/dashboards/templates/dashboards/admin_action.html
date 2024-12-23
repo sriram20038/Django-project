@@ -52,14 +52,6 @@
             transition: background-color 0.3s;
         }
 
-        .approve {
-            background-color: #4CAF50;
-            color: #fff;
-        }
-
-        .approve:hover {
-            background-color: #45a049;
-        }
 
         .reject {
             background-color: #f44336;
@@ -74,9 +66,19 @@
             background-color: #2196F3;
             color: #fff;
         }
+        
 
         .create-course:hover {
             background-color: #1976d2;
+        }
+        .assign-course {
+            background-color: rgb(13, 125, 13);
+            color: #fff;
+        }
+        
+
+        .assign-course:hover {
+            background-color: #096212;
         }
     </style>
 </head>
@@ -91,6 +93,7 @@
             {% csrf_token %}
             <div class="actions">
                 <button type="submit" name="action" value="create" class="create-course">Create Course</button>
+                <!-- <button type="submit" name="action" value="assign" class="assign-course">Assign existing course</button> -->
                 <button type="submit" name="action" value="reject" class="reject" onclick="return confirmReject()">Reject</button>
             </div>
         </form>
