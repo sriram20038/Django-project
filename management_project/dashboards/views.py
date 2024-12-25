@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest,Course,Module
+from .models import TrainingRequest,Course,Module,Notification
 from authentication.models import User,Role
-from .forms import TrainingRequestForm,CourseForm,FeedbackForm
+from .forms import TrainingRequestForm,CourseForm,FeedbackForm,GeneralFeedbackForm
 from django.contrib import messages
 from django.core.paginator import Paginator
 
@@ -51,23 +51,33 @@ def admin_action(request, user_id, request_id):
 
     return render(request, 'dashboards/admin_action.html', context)
 
-
 def create_course(request, user_id):
-    create=User.objects.get(id=user_id)
+    admin = User.objects.get(id=user_id)  # The user creating the course
+    
     if request.method == 'POST':
         form = CourseForm(request.POST)
         
         if form.is_valid():
             course = form.save(commit=False)  # Don't save to the database yet
-            course.created_by = create  # Assign the logged-in user
-            course.save()  # Save to the database
+            course.created_by = admin  # Assign the logged-in user
+            course.save()  # Save the course to the database
             messages.success(request, 'Course created successfully!')
-            return redirect('view_course', course_id=course.course_id)
+            
+            # Create a notification and assign it to all employees in one go
+            employees = User.objects.filter(role=Role.objects.get(role_name='Employee').id)  # Filter users with the role 'employee'
+            notification = Notification.objects.create(
+                title=f"New Course: {course.title}",
+                message=f"A new course titled '{course.title}' has been created."
+            )
+            notification.recipients.set(employees)  # Assign all employees as recipients
+            
+            return redirect('view_course', course_id=course.course_id,user_id=user_id)  # Redirect to the course view page
 
     else:
         form = CourseForm()
 
     return render(request, 'dashboards/create_course.html', {'form': form})
+
 
 
 def view_course(request,course_id,user_id):
@@ -128,13 +138,32 @@ def feedback_view(request, course_id, user_id):
     # Render the feedback form page
     return render(request, 'dashboards/feedback_form.html', {'form': form, 'course': course,'employee':employee})
 
-def Employee_view(request,user_id):
+def Employee_view(request, user_id):
     employee = get_object_or_404(User, id=user_id)
-    context={
-        'employee':employee,
-        'courses':Course.objects.all()
+
+    # Handle feedback form submission
+    if request.method == 'POST':
+        form = GeneralFeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = employee  # Assign the feedback to the employee
+            feedback.save()
+            messages.success(request, "Thank you for your feedback!")
+            return redirect('Employee', user_id=user_id)  # Redirect to the same page
+    else:
+        form = GeneralFeedbackForm()
+    notifications = Notification.objects.filter(recipients=employee)
+    
+
+    context = {
+        'employee': employee,
+        'courses': Course.objects.all(),
+        'form': form,  # Include the form in the context
+        'notifications': notifications
     }
-    return render(request, 'dashboards/Employee.html',context)
+    return render(request, 'dashboards/Employee.html', context)
+
+
 def Manager_view(request, user_id):
     manager = get_object_or_404(User, id=user_id)
     training_requests = TrainingRequest.objects.filter(account_manager=manager).order_by('-created_at')

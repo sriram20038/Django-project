@@ -1,5 +1,5 @@
 from django import forms
-from .models import TrainingRequest, Course, Feedback
+from .models import TrainingRequest, Course, Feedback,GeneralFeedback
 
 class TrainingRequestForm(forms.ModelForm):
     class Meta:
@@ -35,4 +35,18 @@ class FeedbackForm(forms.ModelForm):
             'course': 'Course',
             'rating': 'Rate the course (1 to 5)',
             'comments': 'Additional Comments',
+        }
+
+
+
+class GeneralFeedbackForm(forms.ModelForm):
+    class Meta:
+        model = GeneralFeedback
+        fields = ['comments']
+        widgets = {
+            'comments': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Enter your feedback here...',
+                'class': 'form-control',
+            }),
         }

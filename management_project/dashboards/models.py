@@ -87,6 +87,8 @@ class Progress(models.Model):
     def __str__(self):
         return f"Progress ID: {self.progress_id}, Course: {self.course}, Employee: {self.employee}"
 
+
+
 # Feedback Model
 class Feedback(models.Model):
     feedback_id = models.AutoField(primary_key=True)
@@ -102,3 +104,24 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback ID: {self.feedback_id}, Course: {self.course}, Rating: {self.rating}"
+
+
+
+class GeneralFeedback(models.Model):
+    user = models.ForeignKey('authentication.User', on_delete=models.CASCADE)  # User providing the feedback
+    comments = models.TextField()  # Feedback comments
+    submitted_at = models.DateTimeField(auto_now_add=True)  # Timestamp of submission
+
+    def __str__(self):
+        return f"Feedback by {self.user.name} on {self.submitted_at}"
+
+
+class Notification(models.Model):
+    title = models.CharField(max_length=255)  # Title of the notification
+    message = models.TextField()  # Detailed notification message
+    recipients = models.ManyToManyField('authentication.User', related_name='notifications')  # Users receiving the notification
+    created_at = models.DateTimeField(auto_now_add=True)  # Timestamp for when the notification was created
+    is_read = models.BooleanField(default=False)  # Status of whether the notification has been read or not
+
+    def __str__(self):
+        return f"Notification: {self.title} ({self.created_at})"

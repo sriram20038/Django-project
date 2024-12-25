@@ -359,21 +359,42 @@
     </div>
   </section>
 
+
+
+
   <section id="feedback-section" class="dashboard-section">
-    <h2>Feedback</h2>
-    <form id="feedback-form">
-      <textarea id="feedback-text" rows="4" placeholder="Enter your feedback here"></textarea>
-      <button type="submit">Submit Feedback</button>
+    <h2>General Feedback</h2>
+    <form method="post" id="general-feedback-form" action="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Submit Feedback</button>
     </form>
-    <div id="feedback-response"></div>
+    {% if messages %}
+      <div id="general-feedback-response">
+        {% for message in messages %}
+          <p>{{ message }}</p>
+        {% endfor %}
+      </div>
+    {% endif %}
   </section>
+
+
+
+
+
 
   <section id="notifications-section" class="dashboard-section">
     <h2>Notifications</h2>
     <ul id="notifications-list">
-      <li>New project assignment: Web App Redesign</li>
-      <li>Team meeting scheduled for tomorrow at 10 AM</li>
-      <li>Reminder: Complete your weekly report</li>
+      {% for notification in notifications %}
+        <li>
+          <strong>{{ notification.title }}</strong>: {{ notification.message }}
+          <br>
+          <small>Sent at: {{ notification.created_at }}</small>
+        </li>
+      {% empty %}
+        <li>No notifications yet.</li>
+      {% endfor %}
     </ul>
   </section>
 
