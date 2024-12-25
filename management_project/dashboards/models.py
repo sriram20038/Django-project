@@ -23,6 +23,13 @@ class TrainingRequest(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+
+
+
+
+
 class Course(models.Model):
     course_id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=255)
@@ -32,6 +39,7 @@ class Course(models.Model):
         on_delete=models.CASCADE,
         limit_choices_to={'role__role_name': 'Admin'}
     )
+    resource_link = models.URLField(max_length=1024, null=True, blank=True)  # For URLs (e.g., YouTube)
     created_at = models.DateTimeField(auto_now_add=True)
     employees = models.ManyToManyField(
         'authentication.User',
@@ -39,7 +47,6 @@ class Course(models.Model):
         limit_choices_to={'role__role_name': 'Employee'},
         blank=True  # Optional field
     )
-    resources = models.URLField(max_length=1024, null=True, blank=True)  # General course resources
 
     def number_of_modules(self):
         # Count the number of related modules
@@ -47,6 +54,7 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class Module(models.Model):
     module_id = models.AutoField(primary_key=True)
@@ -57,7 +65,11 @@ class Module(models.Model):
     )
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    resources = models.URLField(max_length=1024, null=True, blank=True)  # Resources specific to this module
+    
+    # General resource link (could be a URL or file)
+    youtube_link = models.URLField(max_length=1024, null=True, blank=True)  # For URLs (e.g., YouTube)
+    file_upload = models.FileField(upload_to='module_resources/', null=True, blank=True)  # For file uploads
+    
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

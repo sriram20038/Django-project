@@ -398,8 +398,7 @@
         <li>
             <h3>{{ course.title }}</h3>
             <p>Description: {{ course.description }}</p>
-            <p>Resources: {{ course.resources}}</p>
-            <!-- <button class="resume-course" data-course="{{ course.course_code }}">Resume Course</button> -->
+            <a href="{% url 'view_course' course_id=course.course_id %}" ><button class="resume-course" >View Course</button></a>
         </li>
         {% endfor %}
     </ul>
@@ -443,13 +442,6 @@
       }
     });
 
-    // Course resume buttons
-    document.querySelectorAll('.resume-course').forEach(button => {
-      button.addEventListener('click', function() {
-        const course = this.getAttribute('data-course');
-        alert(`Resuming ${course} course...`);
-      });
-    });
   </script>
 </body>
 </html>

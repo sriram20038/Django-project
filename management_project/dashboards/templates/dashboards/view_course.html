@@ -6,58 +6,116 @@
     <title>{{ course.title }}</title>
     <style>
         body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f7f9fc;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.container {
-    width: 80%;
-    margin: 50px auto;
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
-}
+        .container {
+            width: 80%;
+            margin: 50px auto;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+        }
 
-h1 {
-    text-align: center;
-    font-size: 2.5em;
-    color: #2c3e50;
-    margin-bottom: 20px;
-}
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
 
-.course-details {
-    margin-top: 30px;
-}
+        .course-details {
+            margin-top: 30px;
+        }
 
-.course-details h3 {
-    font-size: 1.5em;
-    color: #34495e;
-    margin-bottom: 10px;
-}
+        .course-details h3 {
+            font-size: 1.5em;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
 
-.course-details p {
-    font-size: 1.1em;
-    color: #7f8c8d;
-    line-height: 1.6;
-    margin-bottom: 15px;
-}
+        .course-details p {
+            font-size: 1.1em;
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
 
-.course-details strong {
-    color: #2c3e50;
-}
+        .course-details strong {
+            color: #2c3e50;
+        }
 
-.course-details a {
-    color: #2980b9;
-    text-decoration: none;
-}
+        .course-details a {
+            color: #2980b9;
+            text-decoration: none;
+        }
 
-.course-details a:hover {
-    text-decoration: underline;
-}
+        .course-details a:hover {
+            text-decoration: underline;
+        }
+
+        /* YouTube video embed */
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 ratio */
+            height: 0;
+            overflow: hidden;
+            max-width: 100%;
+            margin-bottom: 30px;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 90%;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress {
+            height: 100%;
+            width: 0;
+            background-color: #27ae60;
+            position: absolute;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 1em;
+            color: #fff;
+        }
+
+        .completion-text {
+            font-size: 1.2em;
+            color: #34495e;
+            margin-top: 10px;
+        }
 
     </style>
 </head>
@@ -66,40 +124,30 @@ h1 {
     <div class="container">
         <h1>{{ course.title }}</h1>
         
+        <!-- YouTube Video Embed -->
+        <div class="video-container">
+            <iframe src="https://www.youtube.com/embed/{{video_id}}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        
         <div class="course-details">
             <h3>Description:</h3>
             <p>{{ course.description }}</p>
             <p><strong>Created By:</strong> {{ course.created_by }}</p>
             <p><strong>Created At:</strong> {{ course.created_at }}</p>
-            <p><strong>Resources:</strong> {{ course.resources }}</p>
+            <p><strong>Resources:</strong> <a href="{{ course.resources_link }}" target="_blank">View Resources</a></p>
         </div>
 
-        <!-- <div class="module-list">
-            <h3>Modules:</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Module Title</th>
-                        <th>Description</th>
-                        <th>Resources</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for module in course.modules.all %}
-                    <tr>
-                        <td>{{ module.title }}</td>
-                        <td>{{ module.description }}</td>
-                        <td><a href="{{ module.resources }}" target="_blank">View Resource</a></td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3">No modules available for this course.</td>
-                    </tr>
-                    {% endfor %} 
-                </tbody>
-            </table>
+        <!-- Progress Bar -->
+        <div class="progress-container">
+            <h3>Course Progress</h3>
+            <div class="progress-bar">
+                <div class="progress" style="width: {{ course.progress }}%;"></div>
+                <div class="progress-text">{{ course.progress }}% Completed</div>
+            </div>
+            <p class="completion-text">{{ course.progress }}% of the course completed.</p>
         </div>
-    </div> -->
+
+    </div>
 
 </body>
 </html>

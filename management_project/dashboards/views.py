@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest,Course
+from .models import TrainingRequest,Course,Module
 from authentication.models import User,Role
 from .forms import TrainingRequestForm,CourseForm
 from django.contrib import messages
@@ -51,6 +51,7 @@ def admin_action(request, user_id, request_id):
 
     return render(request, 'dashboards/admin_action.html', context)
 
+
 def create_course(request, user_id):
     create=User.objects.get(id=user_id)
     if request.method == 'POST':
@@ -61,21 +62,44 @@ def create_course(request, user_id):
             course.created_by = create  # Assign the logged-in user
             course.save()  # Save to the database
             messages.success(request, 'Course created successfully!')
-            return redirect('Admin', user_id=user_id)
+            return redirect('view_course', course_id=course.course_id)
 
     else:
         form = CourseForm()
 
     return render(request, 'dashboards/create_course.html', {'form': form})
 
+
 def view_course(request,course_id):
     course = get_object_or_404(Course, course_id=course_id)
+    import re
+
+    def extract_video_id(url):
+        # Regular expression to match YouTube URL formats
+        patterns = [
+            r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})',  # For standard YouTube URLs
+            r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})'  # For shortened URLs
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)  # Return the video ID
+
+        return None  # Return None if no ID is found
+
+    # Example Usage
+    url = course.resource_link
+    video_id = extract_video_id(url)
+
 
     context={
-        'course':course
+        'course':course,
+        'video_id':video_id
 
     }
     return render(request, 'dashboards/view_course.html', context)
+
 
 
 

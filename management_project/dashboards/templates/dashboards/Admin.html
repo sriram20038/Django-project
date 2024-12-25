@@ -279,9 +279,9 @@
     <div id="dashboard-page" class="page active">
       <nav>
         <span>
-          Learning Hub
-          <button class="tracker-btn" onclick="employeetracking()">Employee Progress Tracker</button>
-          <button class="tracker-btn" onclick="employeefeedback()">Feedback Tracker</button>
+          <a href="{% url 'create_course' user_id %}"><button>create course</button></a>
+          <a href="{% url 'create_course' user_id %}"><button>Employee Progress Tracker</button></a>
+          <a href="{% url 'create_course' user_id %}"><button>Feedback Tracker</button></a>
         </span>
         <span>
           Hey {{name}}!
@@ -325,10 +325,16 @@
                 <td>{{item.account_manager}}</td>
                 <td><a href="{% url 'admin_action' user_id=user_id request_id=item.request_id %}"><button>View</button></a></td>
             </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No data available</td>
+            </tr>
+
             {% endfor %}
             
         </tbody>
-          
+        </table>
+        <h2>Existing Courses</h2>
         <table id="existing-courses">
           <thead>
               <tr>
@@ -354,6 +360,11 @@
                       </form>
                   </td>
               </tr>
+              {% empty %}
+              <tr>
+                  <td colspan="4">No data available</td>
+              </tr>
+
               {% endfor %}
           </tbody>
       </table>
