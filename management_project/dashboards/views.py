@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import TrainingRequest,Course,Module
 from authentication.models import User,Role
-from .forms import TrainingRequestForm,CourseForm
+from .forms import TrainingRequestForm,CourseForm,FeedbackForm
 from django.contrib import messages
 from django.core.paginator import Paginator
 
@@ -17,7 +17,7 @@ def Admin_view(request, user_id):
         return redirect('Admin', user_id=user_id)  # Redirect to the admin page after deletion
 
     context = {
-        'name': admin.name,
+        'admin': admin,
         'user_id': user_id,
         'courses_count': Course.objects.all().count(),
         'pending_count': TrainingRequest.objects.filter(status='Pending').count(),
@@ -70,8 +70,9 @@ def create_course(request, user_id):
     return render(request, 'dashboards/create_course.html', {'form': form})
 
 
-def view_course(request,course_id):
+def view_course(request,course_id,user_id):
     course = get_object_or_404(Course, course_id=course_id)
+    employee = get_object_or_404(User, id=user_id)
     import re
 
     def extract_video_id(url):
@@ -95,13 +96,37 @@ def view_course(request,course_id):
 
     context={
         'course':course,
-        'video_id':video_id
+        'video_id':video_id,
+        'employee':employee
 
     }
     return render(request, 'dashboards/view_course.html', context)
 
 
 
+def feedback_view(request, course_id, user_id):
+    # Retrieve the course and employee objects
+    course = get_object_or_404(Course, course_id=course_id)
+    employee = get_object_or_404(User, id=user_id)
+
+    # If the request method is POST, process the feedback form
+    if request.method == 'POST':
+        form = FeedbackForm(request.POST)
+        if form.is_valid():
+            # Save the feedback with the associated course and employee (user)
+            feedback = form.save(commit=False)  # Don't save yet
+            feedback.course = course
+            feedback.employee = employee
+            feedback.save()  # Now save the feedback to the database
+            
+            # Redirect to a success page (can be course view page or a confirmation page)
+            return redirect('view_course', course_id=course_id,user_id=user_id)
+    else:
+        # If the form was not submitted, render an empty form
+        form = FeedbackForm()
+
+    # Render the feedback form page
+    return render(request, 'dashboards/feedback_form.html', {'form': form, 'course': course,'employee':employee})
 
 def Employee_view(request,user_id):
     employee = get_object_or_404(User, id=user_id)

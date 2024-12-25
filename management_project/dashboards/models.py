@@ -1,5 +1,4 @@
 from django.db import models
-from django.db.models import Count
 
 class TrainingRequest(models.Model):
     request_id = models.AutoField(primary_key=True)
@@ -74,3 +73,32 @@ class Module(models.Model):
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
+    
+
+
+
+# Progress Model
+class Progress(models.Model):
+    progress_id = models.AutoField(primary_key=True)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)  # ForeignKey to Course
+    employee = models.ForeignKey('authentication.User', on_delete=models.CASCADE)  # ForeignKey to User
+    progress_percent = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"Progress ID: {self.progress_id}, Course: {self.course}, Employee: {self.employee}"
+
+# Feedback Model
+class Feedback(models.Model):
+    feedback_id = models.AutoField(primary_key=True)
+    course = models.ForeignKey('Course', on_delete=models.CASCADE)  # ForeignKey to Course
+    employee = models.ForeignKey('authentication.User', on_delete=models.CASCADE)  # ForeignKey to User
+    rating = models.IntegerField()  # IntegerField for ratings
+    comments = models.TextField(blank=True, null=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(rating__gte=1) & models.Q(rating__lte=5), name='rating_between_1_and_5')
+        ]
+
+    def __str__(self):
+        return f"Feedback ID: {self.feedback_id}, Course: {self.course}, Rating: {self.rating}"

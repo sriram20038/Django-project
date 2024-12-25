@@ -120,6 +120,7 @@
     </style>
 </head>
 <body>
+    <h1>hii {{employee.name}}</h1>
 
     <div class="container">
         <h1>{{ course.title }}</h1>
@@ -146,6 +147,8 @@
             </div>
             <p class="completion-text">{{ course.progress }}% of the course completed.</p>
         </div>
+
+        <a href="{% url 'feedback_form' course_id=course.course_id user_id=employee.id %}"><button>Give feedback</button></a>
 
     </div>
 

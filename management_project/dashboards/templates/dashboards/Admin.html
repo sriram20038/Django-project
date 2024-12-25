@@ -284,7 +284,7 @@
           <a href="{% url 'create_course' user_id %}"><button>Feedback Tracker</button></a>
         </span>
         <span>
-          Hey {{name}}!
+          Hey {{admin.name}}!
           <label class="theme-switch">
             <input type="checkbox" id="theme-toggle">
             <span class="slider"></span>
@@ -351,9 +351,9 @@
                   <td>{{ item.title }}</td>
                   <td>{{ item.description }}</td>
                   <td>{{ item.created_by }}</td>
-                  <td><a href="{% url 'view_course' course_id=item.course_id %}"><button>View</button></a></td>
+                  <td><a href="{% url 'view_course' course_id=item.course_id user_id=user_id %}"><button>View</button></a></td>
                   <td>
-                      <form method="POST" action="{% url 'Admin' user_id=user_id %}">
+                      <form method="POST" action="{% url 'Admin' user_id=admin.id %}">
                           {% csrf_token %}
                           <input type="hidden" name="course_id" value="{{ item.course_id }}">
                           <button type="submit" name="delete_course" style="background-color: rgb(202, 26, 26);">Delete</button>
