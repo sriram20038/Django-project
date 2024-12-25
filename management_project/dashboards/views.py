@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest,Course,Module,Notification
+from .models import TrainingRequest,Course,Module,Notification,Feedback,GeneralFeedback
 from authentication.models import User,Role
 from .forms import TrainingRequestForm,CourseForm,FeedbackForm,GeneralFeedbackForm
 from django.contrib import messages
@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 
 
 # Create your views here.
+
 def Admin_view(request, user_id):
     admin = get_object_or_404(User, id=user_id)
 
@@ -26,6 +27,7 @@ def Admin_view(request, user_id):
         'courses': Course.objects.all(),
     }
     return render(request, 'dashboards/Admin.html', context)
+
 
 
 def admin_action(request, user_id, request_id):
@@ -50,6 +52,8 @@ def admin_action(request, user_id, request_id):
             return redirect('Admin', user_id=user_id)  # Correct the redirect to pass user_id properly
 
     return render(request, 'dashboards/admin_action.html', context)
+
+
 
 def create_course(request, user_id):
     admin = User.objects.get(id=user_id)  # The user creating the course
@@ -138,6 +142,8 @@ def feedback_view(request, course_id, user_id):
     # Render the feedback form page
     return render(request, 'dashboards/feedback_form.html', {'form': form, 'course': course,'employee':employee})
 
+
+
 def Employee_view(request, user_id):
     employee = get_object_or_404(User, id=user_id)
 
@@ -162,6 +168,7 @@ def Employee_view(request, user_id):
         'notifications': notifications
     }
     return render(request, 'dashboards/Employee.html', context)
+
 
 
 def Manager_view(request, user_id):
@@ -199,3 +206,17 @@ def Manager_view(request, user_id):
 
     context['form'] = form
     return render(request, 'dashboards/Manager.html', context)
+
+
+
+def feedback_tracker(request,user_id):
+    # Fetch course feedback and general feedback from the database
+    course_feedback = Feedback.objects.select_related('course', 'employee').all()
+    general_feedback = GeneralFeedback.objects.select_related('user').all()
+
+    context = {
+        'course_feedback': course_feedback,
+        'general_feedback': general_feedback,
+    }
+
+    return render(request, 'dashboards/feedback_tracker.html', context)

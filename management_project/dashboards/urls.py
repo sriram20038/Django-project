@@ -9,5 +9,6 @@ urlpatterns = [
     path('admin_action/<int:user_id>/<int:request_id>/', views.admin_action, name='admin_action'),
     path('create_course/<int:user_id>/', views.create_course, name='create_course'),
     path('view_course/<int:course_id>/<int:user_id>/', views.view_course, name='view_course'),
-    path('feedback_form.html/<int:course_id>/<int:user_id>/',views.feedback_view,name='feedback_form')
+    path('feedback_form/<int:course_id>/<int:user_id>/',views.feedback_view,name='feedback_form'),
+    path('feedback_tracker/<int:user_id>/',views.feedback_tracker,name='feedback_tracker')
 ]
