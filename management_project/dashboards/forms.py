@@ -1,5 +1,6 @@
 from django import forms
-from .models import TrainingRequest, Course, Feedback,GeneralFeedback
+from .models import TrainingRequest, Course, Feedback,GeneralFeedback,Module
+from django.forms import inlineformset_factory
 
 class TrainingRequestForm(forms.ModelForm):
     class Meta:
@@ -10,13 +11,35 @@ class TrainingRequestForm(forms.ModelForm):
             'status': forms.Select(),
         }
 
-
-
-class CourseForm(forms.ModelForm):
+class CourseCreationForm(forms.ModelForm):
     class Meta:
         model = Course
-        fields = ['title', 'description','resource_link']
+        fields = ['title', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Course Title'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter Course Description'}),
+            'employees': forms.SelectMultiple(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'title': 'Course Title',
+            'description': 'Course Description',
+            'employees': 'Assign to Employees',
+        }
 
+# Inline formset for modules linked to a course
+ModuleFormSet = inlineformset_factory(
+    Course,
+    Module,
+    fields=('title', 'description', 'resource_link', 'file_upload'),
+    widgets={
+        'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Module Title'}),
+        'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter Module Description'}),
+        'resource_link': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'Enter Resource Link'}),
+        'file_upload': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+    },
+    extra=1,  # Default to 1 blank module form
+    can_delete=True
+)
 
 class FeedbackForm(forms.ModelForm):
     class Meta:

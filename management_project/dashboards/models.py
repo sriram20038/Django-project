@@ -26,29 +26,27 @@ class TrainingRequest(models.Model):
 
 
 
-
-
-
+# User model assumed to be in 'authentication' app
 class Course(models.Model):
     course_id = models.AutoField(primary_key=True)
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
     created_by = models.ForeignKey(
         'authentication.User',
         on_delete=models.CASCADE,
-        limit_choices_to={'role__role_name': 'Admin'}
+        limit_choices_to={'role__role_name': 'Admin'},
+        related_name='created_courses'
     )
-    resource_link = models.URLField(max_length=1024, null=True, blank=True)  # For URLs (e.g., YouTube)
     created_at = models.DateTimeField(auto_now_add=True)
     employees = models.ManyToManyField(
         'authentication.User',
         related_name='enrolled_courses',
         limit_choices_to={'role__role_name': 'Employee'},
-        blank=True  # Optional field
+        blank=True
     )
 
     def number_of_modules(self):
-        # Count the number of related modules
+        """Count the number of modules in this course."""
         return self.modules.count()
 
     def __str__(self):
@@ -59,33 +57,40 @@ class Module(models.Model):
     module_id = models.AutoField(primary_key=True)
     course = models.ForeignKey(
         Course,
-        related_name='modules',  # Links modules to a course
+        related_name='modules',
         on_delete=models.CASCADE
     )
     title = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
-    
-    # General resource link (could be a URL or file)
-    youtube_link = models.URLField(max_length=1024, null=True, blank=True)  # For URLs (e.g., YouTube)
-    file_upload = models.FileField(upload_to='module_resources/', null=True, blank=True)  # For file uploads
-    
+    resource_link = models.URLField(max_length=1024, null=True, blank=True)
+    file_upload = models.FileField(upload_to='module_resources/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.course.title} - {self.title}"
-    
 
 
+class EmployeeCourseProgress(models.Model):
+    employee = models.ForeignKey(
+        'authentication.User',
+        on_delete=models.CASCADE,
+        limit_choices_to={'role__role_name': 'Employee'},
+        related_name='course_progress'
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='progress'
+    )
+    progress_percentage = models.FloatField(default=0.0)  # Track course progress
+    completed_on = models.DateTimeField(null=True, blank=True)
 
-# Progress Model
-class Progress(models.Model):
-    progress_id = models.AutoField(primary_key=True)
-    course = models.ForeignKey('Course', on_delete=models.CASCADE)  # ForeignKey to Course
-    employee = models.ForeignKey('authentication.User', on_delete=models.CASCADE)  # ForeignKey to User
-    progress_percent = models.IntegerField(default=0)
+    class Meta:
+        unique_together = ('employee', 'course')
 
     def __str__(self):
-        return f"Progress ID: {self.progress_id}, Course: {self.course}, Employee: {self.employee}"
+        return f"{self.employee.username} - {self.course.title} ({self.progress_percentage}%)"
+
 
 
 
@@ -125,3 +130,14 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification: {self.title} ({self.created_at})"
+    
+
+
+
+class ModuleCompletion(models.Model):
+    user = models.ForeignKey('authentication.User', on_delete=models.CASCADE)
+    module = models.ForeignKey('Module', on_delete=models.CASCADE)
+    is_completed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('user', 'module')

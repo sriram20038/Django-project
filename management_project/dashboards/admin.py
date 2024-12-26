@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TrainingRequest, Course, Module,Progress,Feedback,GeneralFeedback
+from .models import TrainingRequest, Course, Module,EmployeeCourseProgress,Feedback,GeneralFeedback,ModuleCompletion
 
 @admin.register(TrainingRequest)
 class TrainingRequestAdmin(admin.ModelAdmin):
@@ -10,25 +10,34 @@ class TrainingRequestAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CourseAdmin(admin.ModelAdmin):
-    list_display = ('course_id', 'title', 'created_by', 'created_at')
+    list_display = ('title', 'created_by', 'created_at', 'number_of_modules')
     list_filter = ('created_by', 'created_at')
-    search_fields = ('title', 'description')
+    search_fields = ('title', 'description', 'created_by__username')
+    filter_horizontal = ('employees',)  # For ManyToManyField
     ordering = ('-created_at',)
-    filter_horizontal = ('employees',)  # For easier management of ManyToManyField
+
+    def number_of_modules(self, obj):
+        return obj.number_of_modules()
+    number_of_modules.short_description = 'Modules'
 
 
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ('module_id', 'course', 'title', 'created_at')
+    list_display = ('title', 'course', 'created_at')
     list_filter = ('course', 'created_at')
-    search_fields = ('title', 'description')
+    search_fields = ('title', 'description', 'course__title')
     ordering = ('-created_at',)
 
-@admin.register(Progress)
-class ProgressAdmin(admin.ModelAdmin):
-    list_display = ('progress_id', 'course', 'employee', 'progress_percent')
-    search_fields = ('course__name', 'employee__username')  # Adjust based on actual fields in Course and User models
-    list_filter = ('progress_percent',)  # Filter by progress percentage
+
+@admin.register(EmployeeCourseProgress)
+class EmployeeCourseProgressAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'course', 'progress_percentage', 'completed_on')
+    list_filter = ('course', 'completed_on')
+    search_fields = ('employee__username', 'course__title')
+    ordering = ('-completed_on', 'progress_percentage')
+
+
+
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
@@ -47,3 +56,14 @@ class GeneralFeedbackAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         # Customize the queryset if needed (e.g., for filtering by user permissions)
         return super().get_queryset(request).select_related('user')
+    
+
+
+class ModuleCompletionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'module', 'is_completed')
+    list_filter = ('is_completed',)
+    search_fields = ('user__username', 'module__name')
+    list_editable = ('is_completed',)
+    ordering = ('-is_completed',)
+
+admin.site.register(ModuleCompletion, ModuleCompletionAdmin)

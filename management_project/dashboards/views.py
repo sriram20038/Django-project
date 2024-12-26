@@ -1,10 +1,26 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import TrainingRequest,Course,Module,Notification,Feedback,GeneralFeedback
+from django.http import HttpResponseRedirect
+from .models import TrainingRequest,Course,Module,Notification,Feedback,GeneralFeedback,ModuleCompletion
 from authentication.models import User,Role
-from .forms import TrainingRequestForm,CourseForm,FeedbackForm,GeneralFeedbackForm
+from .forms import TrainingRequestForm,FeedbackForm,GeneralFeedbackForm,CourseCreationForm,ModuleFormSet
 from django.contrib import messages
 from django.core.paginator import Paginator
 
+import re
+
+def extract_video_id(url):
+        # Regular expression to match YouTube URL formats
+        patterns = [
+            r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})',  # For standard YouTube URLs
+            r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})'  # For shortened URLs
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)  # Return the video ID
+
+        return None  # Return None if no ID is found
 
 # Create your views here.
 
@@ -57,65 +73,66 @@ def admin_action(request, user_id, request_id):
 
 def create_course(request, user_id):
     admin = User.objects.get(id=user_id)  # The user creating the course
-    
+
     if request.method == 'POST':
-        form = CourseForm(request.POST)
-        
-        if form.is_valid():
-            course = form.save(commit=False)  # Don't save to the database yet
-            course.created_by = admin  # Assign the logged-in user
-            course.save()  # Save the course to the database
-            messages.success(request, 'Course created successfully!')
-            
-            # Create a notification and assign it to all employees in one go
+        form = CourseCreationForm(request.POST)
+        formset = ModuleFormSet(request.POST, request.FILES)  # Handle file uploads
+
+        if form.is_valid() and formset.is_valid():
+            course = form.save(commit=False)
+            course.created_by = admin  # Set the creator as the logged-in user
+            course.save()
+            form.save_m2m()  # Save the ManyToManyField relationships
+
+            modules = formset.save(commit=False)
+            for module in modules:
+                module.course = course  # Link module to the course
+                module.resource_link="https://www.youtube.com/embed/"+extract_video_id(module.resource_link)
+                module.save()
+            formset.save_m2m()  # Save the inline formset relationships
             employees = User.objects.filter(role=Role.objects.get(role_name='Employee').id)  # Filter users with the role 'employee'
             notification = Notification.objects.create(
                 title=f"New Course: {course.title}",
-                message=f"A new course titled '{course.title}' has been created."
-            )
+                message=f"A new course titled '{course.title}' has been created.")
             notification.recipients.set(employees)  # Assign all employees as recipients
-            
-            return redirect('view_course', course_id=course.course_id,user_id=user_id)  # Redirect to the course view page
-
+            return redirect('Admin',user_id=user_id)  # Redirect to the course list page after successful creation
+            notification.recipients.set(employees)  # Assign all employees as recipients
     else:
-        form = CourseForm()
+        form = CourseCreationForm()
+        formset = ModuleFormSet()
 
-    return render(request, 'dashboards/create_course.html', {'form': form})
+    return render(request, 'dashboards/create_course.html', {'form': form, 'formset': formset})
 
 
-
-def view_course(request,course_id,user_id):
+def view_course(request, course_id, user_id):
     course = get_object_or_404(Course, course_id=course_id)
-    employee = get_object_or_404(User, id=user_id)
-    import re
+    modules = course.modules.all()
+    user = get_object_or_404(User, id=user_id)
 
-    def extract_video_id(url):
-        # Regular expression to match YouTube URL formats
-        patterns = [
-            r'(?:https?://)?(?:www\.)?youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})',  # For standard YouTube URLs
-            r'(?:https?://)?(?:www\.)?youtu\.be/([a-zA-Z0-9_-]{11})'  # For shortened URLs
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, url)
-            if match:
-                return match.group(1)  # Return the video ID
+    completed_modules_qs = ModuleCompletion.objects.filter(user=user, module__in=modules, is_completed=True)
+    completed_modules_ids = set(completed_modules_qs.values_list('module__module_id', flat=True))
+    total_modules = modules.count()
+    completed_modules_count = completed_modules_qs.count()
+    progress = int((completed_modules_count / total_modules) * 100) if total_modules > 0 else 0
 
-        return None  # Return None if no ID is found
+    if request.method == 'POST':
+        module_id = request.POST.get('module_id')
+        try:
+            module = get_object_or_404(Module, module_id=module_id)
+            completion, created = ModuleCompletion.objects.get_or_create(user=user, module=module)
+            completion.is_completed = not completion.is_completed
+            completion.save()
+        except Exception as e:
+            print(f"Error: {e}")
 
-    # Example Usage
-    url = course.resource_link
-    video_id = extract_video_id(url)
+        return HttpResponseRedirect(request.path)
 
-
-    context={
-        'course':course,
-        'video_id':video_id,
-        'employee':employee
-
-    }
-    return render(request, 'dashboards/view_course.html', context)
-
+    return render(request, 'dashboards/view_course.html', {
+        'course': course,
+        'modules': modules,
+        'progress': progress,
+        'completed_modules': completed_modules_ids,
+    })
 
 
 def feedback_view(request, course_id, user_id):
@@ -158,7 +175,8 @@ def Employee_view(request, user_id):
             return redirect('Employee', user_id=user_id)  # Redirect to the same page
     else:
         form = GeneralFeedbackForm()
-    notifications = Notification.objects.filter(recipients=employee)
+    notifications = Notification.objects.filter(recipients=employee).order_by('-created_at')
+
     
 
     context = {
@@ -211,12 +229,13 @@ def Manager_view(request, user_id):
 
 def feedback_tracker(request,user_id):
     # Fetch course feedback and general feedback from the database
-    course_feedback = Feedback.objects.select_related('course', 'employee').all()
-    general_feedback = GeneralFeedback.objects.select_related('user').all()
+     # Get all course feedback data
+    feedbacks = Feedback.objects.all().select_related('course', 'employee')
 
-    context = {
-        'course_feedback': course_feedback,
-        'general_feedback': general_feedback,
-    }
+    # Get all general feedback data
+    general_feedback_data = GeneralFeedback.objects.all().select_related('user')
 
-    return render(request, 'dashboards/feedback_tracker.html', context)
+    return render(request, 'dashboards/feedback_tracker.html', {
+        'course_feedback_data': feedbacks,
+        'general_feedback_data': general_feedback_data
+    })
