@@ -4,20 +4,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - LearningHub</title>
-    <link rel="stylesheet" href="{% static 'style/signup.css' %}">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
 </head>
 <body>
     <div class="container">
         <h2>Sign Up</h2>
         <form method="POST" class="signup-form">
             {% csrf_token %}
-            {{ form.as_p }}
-    
+            
+            <!-- Display form fields -->
+            <div>
+                <label for="{{ form.name.id_for_label }}">Name:</label>
+                {{ form.name }}
+            </div>
+            <div>
+                <label for="{{ form.email.id_for_label }}">Email:</label>
+                {{ form.email }}
+            </div>
+            <div>
+                <label for="{{ form.password.id_for_label }}">Password:</label>
+                {{ form.password }}
+            </div>
+            <div>
+                <label for="{{ form.confirm_password.id_for_label }}">Confirm Password:</label>
+                {{ form.confirm_password }}
+            </div>
+            <div>
+                <label for="{{ form.role.id_for_label }}">Role:</label>
+                {{ form.role }}
+            </div>
+
             <div class="show-password">
                 <input type="checkbox" id="showPassword" onclick="togglePassword()"> Show Password
             </div>
-    
+            
             <div class="form-buttons">
                 <button type="submit" class="signup-btn">Sign Up</button>
                 <button type="reset" class="reset-btn">Reset</button>
@@ -28,13 +49,13 @@
     <script>
         function togglePassword() {
             var passwordInput = document.querySelector('input[name="password"]');
-            var confirm_password=document.querySelector('input[name="confirm_password"]');
+            var confirmPasswordInput = document.querySelector('input[name="confirm_password"]');
             if (document.getElementById('showPassword').checked) {
                 passwordInput.type = 'text';
-                confirm_password.type='text';
+                confirmPasswordInput.type = 'text';
             } else {
                 passwordInput.type = 'password';
-                confirm_password.type='password';
+                confirmPasswordInput.type = 'password';
             }
         }
     </script>

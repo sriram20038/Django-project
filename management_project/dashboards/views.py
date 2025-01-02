@@ -5,6 +5,8 @@ from authentication.models import User,Role
 from .forms import TrainingRequestForm,FeedbackForm,GeneralFeedbackForm,CourseCreationForm,ModuleFormSet
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.db.models import Count
+
 
 import re
 
@@ -227,15 +229,28 @@ def Manager_view(request, user_id):
 
 
 
-def feedback_tracker(request,user_id):
+def feedback_tracker(request, user_id):
     # Fetch course feedback and general feedback from the database
-     # Get all course feedback data
     feedbacks = Feedback.objects.all().select_related('course', 'employee')
-
-    # Get all general feedback data
     general_feedback_data = GeneralFeedback.objects.all().select_related('user')
+    
+    # Aggregate feedback ratings distribution
+    rating_counts = (
+        Feedback.objects.values('rating')
+        .annotate(count=Count('rating'))
+        .order_by('rating')
+    )
 
+    # Initialize a dictionary to store the counts for each rating (1 to 5)
+    course_feedback_chart_data = {str(i): 0 for i in range(1, 6)}
+    for rating_count in rating_counts:
+        rating = str(rating_count['rating'])
+        count = rating_count['count']
+        course_feedback_chart_data[rating] = count
+
+    # Pass all data to the template
     return render(request, 'dashboards/feedback_tracker.html', {
         'course_feedback_data': feedbacks,
-        'general_feedback_data': general_feedback_data
+        'general_feedback_data': general_feedback_data,
+        'course_feedback_chart_data': course_feedback_chart_data
     })
