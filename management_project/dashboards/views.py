@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseRedirect
-from .models import TrainingRequest,Course,Module,Notification,Feedback,GeneralFeedback,ModuleCompletion
+from .models import TrainingRequest,Course,Module,Notification,Feedback,GeneralFeedback,ModuleCompletion,EmployeeCourseProgress
 from authentication.models import User,Role
 from .forms import TrainingRequestForm,FeedbackForm,GeneralFeedbackForm,CourseCreationForm,ModuleFormSet
 from django.contrib import messages
@@ -111,12 +111,19 @@ def view_course(request, course_id, user_id):
     modules = course.modules.all()
     user = get_object_or_404(User, id=user_id)
 
+    # Fetch completed modules and calculate progress
     completed_modules_qs = ModuleCompletion.objects.filter(user=user, module__in=modules, is_completed=True)
     completed_modules_ids = set(completed_modules_qs.values_list('module__module_id', flat=True))
     total_modules = modules.count()
     completed_modules_count = completed_modules_qs.count()
     progress = int((completed_modules_count / total_modules) * 100) if total_modules > 0 else 0
 
+    # Update progress in EmployeeCourseProgress model
+    employee_progress, created = EmployeeCourseProgress.objects.get_or_create(employee=user, course=course)
+    employee_progress.progress_percentage = progress
+    employee_progress.save()
+
+    # Handle POST request to toggle module completion
     if request.method == 'POST':
         module_id = request.POST.get('module_id')
         try:
@@ -124,6 +131,14 @@ def view_course(request, course_id, user_id):
             completion, created = ModuleCompletion.objects.get_or_create(user=user, module=module)
             completion.is_completed = not completion.is_completed
             completion.save()
+
+            # Recalculate and update progress after toggling module completion
+            completed_modules_count = ModuleCompletion.objects.filter(
+                user=user, module__in=modules, is_completed=True
+            ).count()
+            progress = int((completed_modules_count / total_modules) * 100) if total_modules > 0 else 0
+            employee_progress.progress_percentage = progress
+            employee_progress.save()
         except Exception as e:
             print(f"Error: {e}")
 
@@ -135,6 +150,7 @@ def view_course(request, course_id, user_id):
         'progress': progress,
         'completed_modules': completed_modules_ids,
     })
+
 
 
 def feedback_view(request, course_id, user_id):
@@ -161,8 +177,6 @@ def feedback_view(request, course_id, user_id):
     # Render the feedback form page
     return render(request, 'dashboards/feedback_form.html', {'form': form, 'course': course,'employee':employee})
 
-
-
 def Employee_view(request, user_id):
     employee = get_object_or_404(User, id=user_id)
 
@@ -177,18 +191,36 @@ def Employee_view(request, user_id):
             return redirect('Employee', user_id=user_id)  # Redirect to the same page
     else:
         form = GeneralFeedbackForm()
+
+    # Fetch notifications
     notifications = Notification.objects.filter(recipients=employee).order_by('-created_at')
 
-    
+    # Fetch course progress data
+    courses = Course.objects.all()
+    course_progress = []
+
+    for course in courses:
+        modules = course.modules.all()
+        total_modules = modules.count()
+        completed_modules = ModuleCompletion.objects.filter(
+            user=employee, module__in=modules, is_completed=True
+        ).count()
+        progress_percentage = int((completed_modules / total_modules) * 100) if total_modules > 0 else 0
+        course_progress.append({
+            'course': course,
+            'completed_modules': completed_modules,
+            'total_modules': total_modules,
+            'progress_percentage': progress_percentage
+        })
 
     context = {
         'employee': employee,
-        'courses': Course.objects.all(),
+        'courses': courses,
         'form': form,  # Include the form in the context
-        'notifications': notifications
+        'notifications': notifications,
+        'course_progress': course_progress,  # Include course progress in the context
     }
     return render(request, 'dashboards/Employee.html', context)
-
 
 
 def Manager_view(request, user_id):
@@ -253,4 +285,21 @@ def feedback_tracker(request, user_id):
         'course_feedback_data': feedbacks,
         'general_feedback_data': general_feedback_data,
         'course_feedback_chart_data': course_feedback_chart_data
+    })
+
+
+
+def progress_view(request):
+    progress_data = EmployeeCourseProgress.objects.select_related('employee', 'course').all()
+    courses = list(progress_data.values_list('course__title', flat=True).distinct())
+    chart_data = {}
+    for progress in progress_data:
+        username = progress.employee.name
+        if username not in chart_data:
+            chart_data[username] = []
+        chart_data[username].append(progress.progress_percentage)
+    return render(request, 'dashboards/progress_tracker.html', {
+        'progress_data': progress_data,
+        'courses': courses,
+        'chart_data': chart_data
     })

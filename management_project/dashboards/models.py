@@ -74,7 +74,6 @@ class EmployeeCourseProgress(models.Model):
     employee = models.ForeignKey(
         'authentication.User',
         on_delete=models.CASCADE,
-        limit_choices_to={'role__role_name': 'Employee'},
         related_name='course_progress'
     )
     course = models.ForeignKey(
@@ -89,7 +88,7 @@ class EmployeeCourseProgress(models.Model):
         unique_together = ('employee', 'course')
 
     def __str__(self):
-        return f"{self.employee.username} - {self.course.title} ({self.progress_percentage}%)"
+        return f"{self.employee.name} - {self.course.title} ({self.progress_percentage}%)"
 
 
 

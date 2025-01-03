@@ -92,18 +92,22 @@
 
 
 
-
-
   <section id="progress-section" class="dashboard-section">
     <h2>Progress</h2>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: 75%;">75%</div>
+    {% for progress in course_progress %}
+    <div class="progress-item">
+        <h3>{{ progress.course.title }}</h3>
+        <p>Modules Completed: {{ progress.completed_modules }} / {{ progress.total_modules }}</p>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress.progress_percentage }}%; ">
+                {{ progress.progress_percentage }}%
+            </div>
+        </div>
     </div>
-    <p>Current Project: Mobile App Development</p>
-    <p>Tasks Completed: 15/20</p>
-  </section>
-
-
+    {% empty %}
+    <p>No course progress available.</p>
+    {% endfor %}
+</section>
 
 
 
