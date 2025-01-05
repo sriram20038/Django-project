@@ -1,5 +1,5 @@
 from django import forms
-from .models import TrainingRequest, Course, Feedback,GeneralFeedback,Module
+from .models import TrainingRequest, Course, Feedback,GeneralFeedback,Module,Notification
 from django.forms import inlineformset_factory
 
 class TrainingRequestForm(forms.ModelForm):
@@ -65,11 +65,12 @@ class FeedbackForm(forms.ModelForm):
 class GeneralFeedbackForm(forms.ModelForm):
     class Meta:
         model = GeneralFeedback
-        fields = ['comments']
+        fields = ['comments']  # Only the comments field is editable by the user
         widgets = {
-            'comments': forms.Textarea(attrs={
-                'rows': 4,
-                'placeholder': 'Enter your feedback here...',
-                'class': 'form-control',
-            }),
+            'comments': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Enter your feedback'}),
         }
+        labels = {
+            'comments': 'Your Feedback',
+        }
+
+

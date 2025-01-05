@@ -11,5 +11,10 @@ urlpatterns = [
     path('view_course/<int:course_id>/<int:user_id>/', views.view_course, name='view_course'),
     path('feedback_form/<int:course_id>/<int:user_id>/',views.feedback_view,name='feedback_form'),
     path('feedback_tracker/<int:user_id>/',views.feedback_tracker,name='feedback_tracker'),
+    path('general_feedback/<int:user_id>/',views.general_feedback_view, name='general_feedback'),
     path('progress/', views.progress_view, name='employee_progress'),
+
+    path('notifications/<int:user_id>/', views.notifications_view, name='notifications'),  # User-specific notifications
+    path('notifications/mark-all-as-read/<int:user_id>/', views.mark_all_as_read, name='mark_all_as_read'),  # Mark all as read
+
 ]

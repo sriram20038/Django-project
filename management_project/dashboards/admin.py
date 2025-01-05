@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TrainingRequest, Course, Module,EmployeeCourseProgress,Feedback,GeneralFeedback,ModuleCompletion
+from .models import TrainingRequest, Course, Module,EmployeeCourseProgress,Feedback,GeneralFeedback,ModuleCompletion,Notification
 
 @admin.register(TrainingRequest)
 class TrainingRequestAdmin(admin.ModelAdmin):
@@ -67,3 +67,12 @@ class ModuleCompletionAdmin(admin.ModelAdmin):
     ordering = ('-is_completed',)
 
 admin.site.register(ModuleCompletion, ModuleCompletionAdmin)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at', 'is_read')  # Display these fields in the admin list view
+    list_filter = ('is_read', 'created_at')  # Add filters for the is_read status and creation date
+    search_fields = ('title', 'message')  # Enable search by title and message
+    filter_horizontal = ('recipients',)  # Better UI for selecting many-to-many relationships
+    ordering = ('-created_at',)  # Order by creation date, newest first

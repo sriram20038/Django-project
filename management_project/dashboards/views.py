@@ -180,20 +180,12 @@ def feedback_view(request, course_id, user_id):
 def Employee_view(request, user_id):
     employee = get_object_or_404(User, id=user_id)
 
-    # Handle feedback form submission
-    if request.method == 'POST':
-        form = GeneralFeedbackForm(request.POST)
-        if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.user = employee  # Assign the feedback to the employee
-            feedback.save()
-            messages.success(request, "Thank you for your feedback!")
-            return redirect('Employee', user_id=user_id)  # Redirect to the same page
-    else:
-        form = GeneralFeedbackForm()
 
-    # Fetch notifications
-    notifications = Notification.objects.filter(recipients=employee).order_by('-created_at')
+    notifications = Notification.objects.filter(
+        recipients=employee, 
+        is_read=False
+    ).order_by('-created_at')  # Order by newest first
+    unread_notifications_count = notifications.count()  # Count unread notifications
 
     # Fetch course progress data
     courses = Course.objects.all()
@@ -216,9 +208,9 @@ def Employee_view(request, user_id):
     context = {
         'employee': employee,
         'courses': courses,
-        'form': form,  # Include the form in the context
         'notifications': notifications,
         'course_progress': course_progress,  # Include course progress in the context
+        'unread_notifications_count': unread_notifications_count
     }
     return render(request, 'dashboards/Employee.html', context)
 
@@ -303,3 +295,35 @@ def progress_view(request):
         'courses': courses,
         'chart_data': chart_data
     })
+
+
+def general_feedback_view(request,user_id):
+    employee = get_object_or_404(User, id=user_id)
+
+    if request.method == 'POST':
+        form = GeneralFeedbackForm(request.POST)
+        if form.is_valid():
+            feedback = form.save(commit=False)
+            feedback.user = employee  # Assuming user is authenticated
+            feedback.save()
+            return redirect('Employee',user_id)  # Replace with your success page or logic
+    else:
+        form = GeneralFeedbackForm()
+    return render(request, 'dashboards/general_feedback.html', {'form': form,'employee':employee})
+
+
+def notifications_view(request,user_id):
+    """
+    Display all unread notifications for the logged-in user.
+    """
+    employee = get_object_or_404(User, id=user_id)
+    notifications = Notification.objects.filter(recipients=employee, is_read=False).order_by('-created_at')   # Unread notifications for the user
+    return render(request, 'dashboards/notifications.html', {'notifications': notifications,'user_id':user_id})
+
+def mark_all_as_read(request,user_id):
+    employee = get_object_or_404(User, id=user_id)
+    """
+    Mark all notifications as read for the logged-in user.
+    """
+    Notification.objects.filter(recipients=employee, is_read=False).update(is_read=True)  # Update for the user
+    return redirect('notifications',user_id)  # Redirect back to the notifications page

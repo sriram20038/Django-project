@@ -28,16 +28,30 @@
   <section class="progress-section">
     <h2 style="text-align:center; margin-bottom: 1.5rem;">My Progress</h2>
     <div class="progress-grid">
+
+
+
       <div class="progress-card">
         <h4>Feedback</h4>
         <p>We value your feedback. Share your thoughts to improve.</p>
-        <button onclick="toggleSection('feedback-section')">Send Feedback</button>
+        <a href="{% url 'general_feedback' employee.id %}"><button>Send Feedback</button></a>
       </div>
+
+
       <div class="progress-card">
         <h4>Notifications</h4>
         <p>Stay updated with the latest announcements and updates.</p>
-        <button onclick="toggleSection('notifications-section')">View Notifications</button>
-      </div>
+        <a href="{% url 'notifications' employee.id %}">
+            <button>View Notifications</button>
+        </a>
+    
+        <!-- Red Badge for Unread Notifications -->
+        <div class="notification-badge" style="color: red;">
+            {{ unread_notifications_count }}
+        </div>
+    </div>
+    
+
       <div class="progress-card">
         <h4>Progress</h4>
         <p>Track your overall progress in training and projects.</p>
@@ -52,43 +66,6 @@
   </section>
 
 
-
-
-  <section id="feedback-section" class="dashboard-section">
-    <h2>General Feedback</h2>
-    <form method="post" id="general-feedback-form" action="">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit Feedback</button>
-    </form>
-    {% if messages %}
-      <div id="general-feedback-response">
-        {% for message in messages %}
-          <p>{{ message }}</p>
-        {% endfor %}
-      </div>
-    {% endif %}
-  </section>
-
-
-
-
-
-
-  <section id="notifications-section" class="dashboard-section">
-    <h2>Notifications</h2>
-    <ul id="notifications-list">
-      {% for notification in notifications %}
-        <li>
-          <strong>{{ notification.title }}</strong>: {{ notification.message }}
-          <br>
-          <small>Sent at: {{ notification.created_at }}</small>
-        </li>
-      {% empty %}
-        <li>No notifications yet.</li>
-      {% endfor %}
-    </ul>
-  </section>
 
 
 

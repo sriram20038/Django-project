@@ -6,58 +6,83 @@
     <title>Employee Progress Tracker</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f9;
+            background-color: #f0f2f5;
+            color: #333;
         }
         header {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
             text-align: center;
-            padding: 1rem 0;
+            padding: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .table-container {
-            margin: 20px auto;
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        .table-container, .chart-container {
+            margin: 30px auto;
             width: 90%;
             max-width: 1200px;
-            overflow-x: auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .table-container:hover, .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
         }
         table {
             width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background: white;
-            border-radius: 5px;
-            overflow: hidden;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
         }
         table th, table td {
-            padding: 12px 15px;
-            border: 1px solid #ddd;
-            text-align: center;
+            padding: 15px;
+            border: none;
+            text-align: left;
         }
         table th {
-            background-color: #4CAF50;
+            background: linear-gradient(135deg, #2196F3, #1976D2);
             color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
         table tbody tr:nth-child(even) {
-            background-color: #f9f9f9;
+            background-color: #f8f9fa;
+        }
+        table tbody tr:hover {
+            background-color: #E3F2FD;
+            transition: background-color 0.3s ease;
         }
         .chart-container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto 30px;
-            padding: 20px;
-            background: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
         }
-        .chart-container h2 {
+        .chart-container h2, .table-container h2 {
             text-align: center;
             margin-bottom: 20px;
+            color: #1565C0;
+            font-size: 1.8rem;
         }
         canvas {
             width: 100%;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .table-container, .chart-container {
+                width: 95%;
+            }
+            table th, table td {
+                padding: 10px;
+            }
         }
     </style>
 </head>
