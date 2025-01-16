@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     
@@ -16,5 +18,7 @@ urlpatterns = [
 
     path('notifications/<int:user_id>/', views.notifications_view, name='notifications'),  # User-specific notifications
     path('notifications/mark-all-as-read/<int:user_id>/', views.mark_all_as_read, name='mark_all_as_read'),  # Mark all as read
+
+    
 
 ]

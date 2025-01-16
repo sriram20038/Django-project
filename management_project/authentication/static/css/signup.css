@@ -175,6 +175,27 @@ h2 {
     transition: width 0.5s;
 }
 
+.show-password {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+.show-password input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.show-password label {
+    cursor: pointer;
+    user-select: none;
+}
+
+
 @media (max-width: 768px) {
     .container {
         padding: 30px;

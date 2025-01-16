@@ -79,7 +79,7 @@ label {
     font-weight: 500;
 }
 
-input[type="email"], input[type="password"] {
+input[type="email"], input[type="password"], input[type="text"] {
     width: 100%;
     padding: 15px;
     border: 2px solid var(--input-border);
@@ -97,7 +97,7 @@ input[type="email"]:focus, input[type="password"]:focus {
     transform: translateY(-2px);
 }
 
-input[type="submit"] {
+button[type="submit"] {
     width: 100%;
     padding: 15px;
     background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
@@ -112,13 +112,13 @@ input[type="submit"] {
     letter-spacing: 1px;
 }
 
-input[type="submit"]:hover {
+button[type="submit"]:hover {
     background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
     box-shadow: 0 5px 15px rgba(106, 90, 205, 0.4);
     transform: translateY(-2px);
 }
 
-input[type="submit"]:active {
+button[type="submit"]:active {
     transform: scale(0.98);
 }
 
@@ -134,15 +134,24 @@ input[type="submit"]:active {
     border-left: 4px solid var(--error-color);
 }
 
-.error-message {
-    color: var(--error-color);
+.show-password {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
     font-size: 14px;
-    margin-top: 15px;
-    display: none;
-    background-color: rgba(255, 77, 77, 0.1);
-    padding: 10px;
-    border-radius: 8px;
-    border-left: 4px solid var(--error-color);
+    color: #333;
+}
+
+.show-password input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.show-password label {
+    cursor: pointer;
+    user-select: none;
 }
 
 p {
@@ -172,11 +181,8 @@ a:hover {
         font-size: 28px;
     }
 
-    input[type="email"], input[type="password"], input[type="submit"] {
+    input[type="email"], input[type="password"], button[type="submit"] {
         font-size: 16px;
         padding: 12px;
     }
 }
-
-
-

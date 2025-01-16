@@ -15,7 +15,7 @@
         <input type="checkbox" id="theme-toggle">
         <span class="slider"></span>
       </label>
-      <button class="logout-btn">Logout</button>
+      <a  href="{% url 'home'%}"><button class="logout-btn">Logout</button></a>
     </div>
   </nav>
 
@@ -68,15 +68,14 @@
 
 
 
-
   <section id="progress-section" class="dashboard-section">
     <h2>Progress</h2>
     {% for progress in course_progress %}
     <div class="progress-item">
         <h3>{{ progress.course.title }}</h3>
-        <p>Modules Completed: {{ progress.completed_modules }} / {{ progress.total_modules }}</p>
+        <p>Modules Completed: {{ progress.completed_modules }}/{{ progress.total_modules }}</p>
         <div class="progress-bar">
-            <div class="progress-fill" style="width: {{ progress.progress_percentage }}%; ">
+            <div class="progress-fill" style="width: {{ progress.progress_percentage }}%;">
                 {{ progress.progress_percentage }}%
             </div>
         </div>

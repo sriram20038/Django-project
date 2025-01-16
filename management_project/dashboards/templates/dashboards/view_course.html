@@ -39,7 +39,7 @@
             <p>Description: {{ module.description }}</p>
             <div class="resources">
                 <p>resources:</p>
-                {% if module.resource_link %}
+                {% if module.resource_link  %}
                     <!-- Embed YouTube video -->
                     <div class="embed-responsive embed-responsive-16by9 mb-3">
                         <iframe class="embed-responsive-item" 
@@ -53,6 +53,7 @@
                 {% if module.file_upload %}
                     <a href="{{ module.file_upload.url }}" download class="btn btn-outline-secondary btn-sm">Download File</a>
                 {% endif %}
+
             </div>
         </div>
         <div class="module-actions">

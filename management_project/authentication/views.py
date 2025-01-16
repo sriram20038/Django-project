@@ -4,6 +4,7 @@ from .forms import Login_form,Signup_form
 from .models import User
 
 def login_view(request):
+    form = Login_form()
     if request.method == 'POST':
         form = Login_form(request.POST)
         if form.is_valid():
@@ -11,22 +12,15 @@ def login_view(request):
             password = form.cleaned_data['password']
 
             try:
-                # Check if user exists in the database
                 user = User.objects.get(email=email)
-
-                # Secure password validation with hashed password
                 if check_password(password, user.password):
-                    request.session['user_id'] = user.id  # Store the user in the session
-                    return redirect(f"{user.role.role_name}", user_id=user.id)  # Redirect to a success page (e.g., home page)
+                    request.session['user_id'] = user.id  # Store user session
+                    return redirect(f"{user.role.role_name}", user_id=user.id)
                 else:
-                    form.add_error(None, "Invalid password")  # Invalid password error
-
+                    form.add_error('password', "Invalid password.")
             except User.DoesNotExist:
-                form.add_error(None, "Invalid email or password")  # Invalid email error
-
-    else:
-        form = Login_form()
-
+                form.add_error('email', "Invalid email or password.")
+    
     return render(request, 'authentication/login.html', {'form': form})
 
 def signup_view(request):

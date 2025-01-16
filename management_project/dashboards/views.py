@@ -72,7 +72,6 @@ def admin_action(request, user_id, request_id):
     return render(request, 'dashboards/admin_action.html', context)
 
 
-
 def create_course(request, user_id):
     admin = User.objects.get(id=user_id)  # The user creating the course
 
@@ -89,7 +88,16 @@ def create_course(request, user_id):
             modules = formset.save(commit=False)
             for module in modules:
                 module.course = course  # Link module to the course
-                module.resource_link="https://www.youtube.com/embed/"+extract_video_id(module.resource_link)
+                if module.resource_link:
+                # Check if it's already in embed format
+                    if "https://www.youtube.com/embed/" in module.resource_link:
+                        pass
+                    else:
+                        # Process to embed format
+                        video_id = extract_video_id(module.resource_link)
+                        module.resource_link = f"https://www.youtube.com/embed/{video_id}"
+                else:
+                    module.resource_link = None  # Handle empty link
                 module.save()
             formset.save_m2m()  # Save the inline formset relationships
             employees = User.objects.filter(role=Role.objects.get(role_name='Employee').id)  # Filter users with the role 'employee'

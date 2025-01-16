@@ -161,3 +161,9 @@
         .container {
             animation: fadeIn 0.5s ease-out;
         }
+
+        input[id^="id_modules-"][id$="-DELETE"],
+        label[for^="id_modules-"][for$="-DELETE"] {
+            display: none;
+        }
+        

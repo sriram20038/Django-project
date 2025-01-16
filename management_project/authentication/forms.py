@@ -6,12 +6,10 @@ from django.core.exceptions import ValidationError
 # Login Form
 class Login_form(forms.Form): 
     email = forms.EmailField(
-        required=True, 
         widget=forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
         error_messages={'required': 'Email is required.'}
     )
     password = forms.CharField(
-        required=True, 
         widget=forms.PasswordInput(attrs={'placeholder': 'Enter your password'}),
         error_messages={'required': 'Password is required.'}
     )
@@ -33,11 +31,9 @@ class Login_form(forms.Form):
 # Signup Form
 class Signup_form(forms.ModelForm):
     password = forms.CharField(
-        required=True, 
         widget=forms.PasswordInput(attrs={'placeholder': 'Create a password'})
     )
     confirm_password = forms.CharField(
-        required=True, 
         widget=forms.PasswordInput(attrs={'placeholder': 'Confirm your password'})
     )
 
@@ -47,7 +43,7 @@ class Signup_form(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Enter your name'}),
             'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'role': forms.Select(attrs={'placeholder': 'Select your role'})
+            'role': forms.Select()
         }
 
     def clean(self):
