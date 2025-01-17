@@ -6,14 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Login - LearningHub</title>
-    <style>
-        
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}?v=1.0">
+    
 </head>
 <body>
     <div class="login-container">
@@ -65,7 +59,6 @@
                 passwordInput.type = 'password';
             }
         }
-
 
         // Validate form on submission
         document.getElementById('loginForm').addEventListener('submit', function(event) {

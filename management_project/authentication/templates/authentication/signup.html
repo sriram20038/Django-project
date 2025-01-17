@@ -6,19 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Sign Up - LearningHub</title>
-    <style>
-        
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/signup.css' %}">
 </head>
 <body>
-    <div class="signup-container">
+    <div class="container">
         <h1>Sign Up</h1>
-        <form id="signupForm" method="POST" novalidate>
+        <form class="signup-form" method="POST" novalidate>
             {% csrf_token %}
 
             <!-- Name field -->
@@ -69,7 +62,7 @@
             <!-- Show password -->
             <div class="show-password">
                 <input type="checkbox" id="showPassword" onclick="togglePassword()"> Show Password
-            </div><br>
+            </div>
 
             <!-- Role field -->
             <div>
@@ -128,7 +121,7 @@
                 isValid = false;
             }
 
-                        // Validate password
+            // Validate password
             const password = document.getElementById('id_password').value;
             const passwordErrorElement = document.querySelector('#id_password').nextElementSibling;
 

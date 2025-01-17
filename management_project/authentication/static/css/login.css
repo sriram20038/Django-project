@@ -172,6 +172,12 @@ a:hover {
     text-decoration: underline;
 }
 
+.error-message {
+    color: var(--error-color);
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
 @media (max-width: 480px) {
     .login-container {
         padding: 40px 25px;
