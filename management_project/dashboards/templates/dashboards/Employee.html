@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Dashboard</title>
-  <link rel="stylesheet" href="{% static 'css/employee.css' %}">
+  <link rel="stylesheet" href="{% static 'css/employee.css' %}?v=1.0">
 </head>
 <body>
   <nav class="navbar">
@@ -96,7 +96,7 @@
             <h3>{{ course.title }}</h3>
             <p>Description: {{ course.description }}</p>
             <a href="{% url 'view_course' course_id=course.course_id user_id=employee.id %}" ><button class="resume-course" >View Course</button></a>
-            <a href="{% url 'feedback_form' course_id=course.course_id user_id=employee.id %}"><button>Give feedback</button></a>
+            <a href="{% url 'feedback_form' course_id=course.course_id user_id=employee.id %}" ><button class="course-feedback">Give feedback</button></a>
         </li>
         {% endfor %}
     </ul>
