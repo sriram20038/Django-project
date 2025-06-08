@@ -6,6 +6,7 @@ from .forms import TrainingRequestForm,FeedbackForm,GeneralFeedbackForm,CourseCr
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Count
+from authentication.decorators import login_required_custom, role_required
 
 
 import re
@@ -26,6 +27,7 @@ def extract_video_id(url):
 
 # Create your views here.
 
+@role_required(allowed_roles=['Admin'])
 def Admin_view(request, user_id):
     admin = get_object_or_404(User, id=user_id)
 
@@ -48,6 +50,7 @@ def Admin_view(request, user_id):
 
 
 
+@role_required(allowed_roles=['Admin'])
 def admin_action(request, user_id, request_id):
     task = get_object_or_404(TrainingRequest, request_id=request_id)
     context = {
@@ -72,6 +75,7 @@ def admin_action(request, user_id, request_id):
     return render(request, 'dashboards/admin_action.html', context)
 
 
+@role_required(allowed_roles=['Admin'])
 def create_course(request, user_id):
     admin = User.objects.get(id=user_id)  # The user creating the course
 
@@ -114,6 +118,7 @@ def create_course(request, user_id):
     return render(request, 'dashboards/create_course.html', {'form': form, 'formset': formset})
 
 
+@login_required_custom
 def view_course(request, course_id, user_id):
     course = get_object_or_404(Course, course_id=course_id)
     modules = course.modules.all()
@@ -161,6 +166,7 @@ def view_course(request, course_id, user_id):
 
 
 
+@login_required_custom
 def feedback_view(request, course_id, user_id):
     # Retrieve the course and employee objects
     course = get_object_or_404(Course, course_id=course_id)
@@ -185,6 +191,7 @@ def feedback_view(request, course_id, user_id):
     # Render the feedback form page
     return render(request, 'dashboards/feedback_form.html', {'form': form, 'course': course,'employee':employee})
 
+@role_required(allowed_roles=['Employee'])
 def Employee_view(request, user_id):
     employee = get_object_or_404(User, id=user_id)
 
@@ -223,6 +230,7 @@ def Employee_view(request, user_id):
     return render(request, 'dashboards/Employee.html', context)
 
 
+@role_required(allowed_roles=['Manager'])
 def Manager_view(request, user_id):
     manager = get_object_or_404(User, id=user_id)
     training_requests = TrainingRequest.objects.filter(account_manager=manager).order_by('-created_at')
@@ -261,6 +269,7 @@ def Manager_view(request, user_id):
 
 
 
+@role_required(allowed_roles=['Manager', 'Admin'])
 def feedback_tracker(request, user_id):
     # Fetch course feedback and general feedback from the database
     feedbacks = Feedback.objects.all().select_related('course', 'employee')
@@ -289,6 +298,7 @@ def feedback_tracker(request, user_id):
 
 
 
+@role_required(allowed_roles=['Manager', 'Admin'])
 def progress_view(request):
     progress_data = EmployeeCourseProgress.objects.select_related('employee', 'course').all()
     courses = list(progress_data.values_list('course__title', flat=True).distinct())
@@ -305,6 +315,7 @@ def progress_view(request):
     })
 
 
+@login_required_custom
 def general_feedback_view(request,user_id):
     employee = get_object_or_404(User, id=user_id)
 
@@ -320,6 +331,7 @@ def general_feedback_view(request,user_id):
     return render(request, 'dashboards/general_feedback.html', {'form': form,'employee':employee})
 
 
+@login_required_custom
 def notifications_view(request,user_id):
     """
     Display all unread notifications for the logged-in user.
@@ -328,6 +340,7 @@ def notifications_view(request,user_id):
     notifications = Notification.objects.filter(recipients=employee, is_read=False).order_by('-created_at')   # Unread notifications for the user
     return render(request, 'dashboards/notifications.html', {'notifications': notifications,'user_id':user_id})
 
+@login_required_custom
 def mark_all_as_read(request,user_id):
     employee = get_object_or_404(User, id=user_id)
     """
